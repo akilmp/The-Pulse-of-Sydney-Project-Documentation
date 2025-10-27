@@ -1,67 +1,76 @@
-"""Utility helpers for IO operations used across the ETL pipeline."""
+"""I/O utilities shared across the Sydney Pulse project."""
+
 from __future__ import annotations
 
-import hashlib
-import logging
-from datetime import datetime
+import csv
+from datetime import datetime, time
 from pathlib import Path
-from typing import Dict, Optional
+from typing import Iterable, Mapping, MutableMapping, Sequence
 
-import pandas as pd
-import yaml
-
-from .config import REGISTRY_PATH
-
-logger = logging.getLogger(__name__)
+from zoneinfo import ZoneInfo
 
 
-def ensure_directory(path: Path) -> None:
-    """Ensure that ``path``'s parent directory exists."""
-    path.parent.mkdir(parents=True, exist_ok=True)
+def ensure_directory(path: Path) -> Path:
+    """Ensure that the directory for ``path`` exists and return it."""
+
+    directory = path if path.is_dir() else path.parent
+    directory.mkdir(parents=True, exist_ok=True)
+    return directory
 
 
-def sha256sum(path: Path) -> str:
-    """Return the SHA-256 checksum for ``path``."""
-    h = hashlib.sha256()
-    with path.open("rb") as f:
-        for chunk in iter(lambda: f.read(8192), b""):
-            h.update(chunk)
-    return h.hexdigest()
+def write_csv(
+    path: Path,
+    rows: Iterable[Mapping[str, object]] | Iterable[Sequence[object]],
+    fieldnames: Sequence[str] | None = None,
+    *,
+    include_header: bool = True,
+    mode: str = "w",
+) -> Path:
+    """Write rows to ``path`` using the csv module."""
 
-
-def load_registry() -> Dict[str, Dict[str, str]]:
-    if REGISTRY_PATH.exists():
-        with REGISTRY_PATH.open("r", encoding="utf-8") as fh:
-            return yaml.safe_load(fh) or {}
-    return {}
-
-
-def update_registry(dataset: str, metadata: Dict[str, str]) -> None:
-    registry = load_registry()
-    registry[dataset] = metadata
-    with REGISTRY_PATH.open("w", encoding="utf-8") as fh:
-        yaml.safe_dump(registry, fh, sort_keys=True, allow_unicode=True)
-
-
-def write_dataframe(df: pd.DataFrame, path: Path, *, index: bool = False) -> None:
     ensure_directory(path)
-    df.to_csv(path, index=index)
+    with path.open(mode=mode, newline="", encoding="utf-8") as csvfile:
+        if fieldnames is None:
+            writer = csv.writer(csvfile)
+            for row in rows:
+                writer.writerow(list(row))
+        else:
+            writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+            if include_header and ("w" in mode or "x" in mode):
+                writer.writeheader()
+            for row in rows:
+                if not isinstance(row, MutableMapping):
+                    raise TypeError("Row must be a mapping when fieldnames are provided")
+                writer.writerow(row)
+    return path
 
 
-def current_timestamp(tz: Optional[str] = 'UTC') -> str:
-    from datetime import timezone
+def read_csv(path: Path) -> list[dict[str, str]]:
+    """Read a CSV file into a list of dictionaries."""
 
-    tzinfo = None if tz is None else timezone.utc if tz.upper() == 'UTC' else None
-    now = datetime.now(tz=tzinfo) if tzinfo else datetime.now().astimezone()
-    return now.isoformat()
+    with path.open(newline="", encoding="utf-8") as csvfile:
+        reader = csv.DictReader(csvfile)
+        return [dict(row) for row in reader]
+
+
+def local_now(tz: str) -> datetime:
+    """Return the current time in the specified timezone."""
+
+    return datetime.now(tz=ZoneInfo(tz))
+
+
+def combine_date_time(date: datetime, local_time: time, tz: str) -> datetime:
+    """Combine a naive date and a time into an aware datetime in ``tz``."""
+
+    zone = ZoneInfo(tz)
+    naive = datetime.combine(date.date(), local_time)
+    return naive.replace(tzinfo=zone)
 
 
 __all__ = [
     "ensure_directory",
-    "sha256sum",
-    "load_registry",
-    "update_registry",
-    "write_dataframe",
-    "current_timestamp",
+    "write_csv",
+    "read_csv",
+    "local_now",
+    "combine_date_time",
 ]
-

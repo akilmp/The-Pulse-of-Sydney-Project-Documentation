@@ -1,18 +1,36 @@
+.PHONY: help data clean features app test report
+
 PYTHON ?= python
 
-.PHONY: data clean test
+help:
+@echo "Available targets:"
+@echo "  make data     # Fetch raw datasets"
+@echo "  make clean    # Run data cleaning tasks"
+@echo "  make features # Build feature datasets"
+@echo "  make app      # Start the Streamlit dashboard"
+@echo "  make test     # Execute automated tests"
+@echo "  make report   # Generate project report"
+
+DATA_SCRIPT ?= src/etl
+CLEANING_SCRIPT ?= src/cleaning
+FEATURE_SCRIPT ?= src/features
+APP_SCRIPT ?= app/streamlit_app.py
+
 
 data:
-	$(PYTHON) -m src.etl.fetch_transport
-	$(PYTHON) -m src.etl.fetch_weather
-	$(PYTHON) -m src.etl.fetch_housing
-	$(PYTHON) -m src.etl.fetch_abs
+@echo "TODO: Implement data fetching pipelines in $${DATA_SCRIPT}"
 
 clean:
-	$(PYTHON) -m src.cleaning.clean_transport
-	$(PYTHON) -m src.cleaning.clean_weather
-	$(PYTHON) -m src.cleaning.clean_housing
-	$(PYTHON) -m src.cleaning.clean_abs
+@echo "TODO: Implement cleaning steps in $${CLEANING_SCRIPT}"
+
+features:
+@echo "TODO: Implement feature engineering in $${FEATURE_SCRIPT}"
+
+app:
+$(PYTHON) -m streamlit run $(APP_SCRIPT)
 
 test:
-	pytest -q
+$(PYTHON) -m pytest
+
+report:
+@echo "TODO: Generate analytical report"
