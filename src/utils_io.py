@@ -7,7 +7,7 @@ import hashlib
 import os
 from datetime import datetime, time
 from pathlib import Path
-from typing import Iterable, Mapping, MutableMapping, Sequence
+from typing import Iterable, Mapping, MutableMapping, Sequence, TYPE_CHECKING
 
 import yaml
 from pandas import DataFrame
@@ -15,6 +15,10 @@ from zoneinfo import ZoneInfo
 
 DEFAULT_TIMEZONE = "Australia/Sydney"
 DATASET_REGISTRY_ENV = "SYDNEY_PULSE_DATASET_REGISTRY"
+
+
+if TYPE_CHECKING:  # pragma: no cover - type checking only
+    import pandas as pd
 
 
 def ensure_directory(path: Path) -> Path:
@@ -118,6 +122,14 @@ def read_csv(path: Path) -> list[dict[str, str]]:
         return [dict(row) for row in reader]
 
 
+def write_dataframe(df: "pd.DataFrame", path: Path, *, index: bool = False, **kwargs: object) -> Path:
+    """Persist a pandas :class:`DataFrame` to ``path`` as CSV."""
+
+    ensure_directory(path)
+    df.to_csv(path, index=index, **kwargs)
+    return path
+
+
 def local_now(tz: str) -> datetime:
     """Return the current time in the specified timezone."""
 
@@ -136,6 +148,7 @@ __all__ = [
     "ensure_directory",
     "write_csv",
     "read_csv",
+    "write_dataframe",
     "local_now",
     "combine_date_time",
     "current_timestamp",

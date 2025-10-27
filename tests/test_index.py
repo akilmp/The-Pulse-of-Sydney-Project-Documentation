@@ -3,7 +3,8 @@ from __future__ import annotations
 import csv
 from pathlib import Path
 
-from src.config import Settings
+import pytest
+
 from src.features.composite_index import (
     build_composite_index,
     min_max_scale,
@@ -12,63 +13,21 @@ from src.features.composite_index import (
 from src.features.engineer_commute_features import build_commute_features
 from src.features.engineer_weather_features import build_weather_features
 from src.features.make_geometries import build_geometries
+from tests.fixtures.pipeline import (
+    DEFAULT_COMMUTE_ROWS,
+    create_settings,
+    seed_abs_tables,
+    seed_commute_data,
+    seed_weather_data,
+)
 
 
-def _write_csv(path: Path, fieldnames: list[str], rows: list[dict[str, object]]) -> None:
-    with path.open("w", newline="") as handle:
-        writer = csv.DictWriter(handle, fieldnames=fieldnames)
-        writer.writeheader()
-        writer.writerows(rows)
-
-
-def _settings_with_data(tmp_path: Path) -> Settings:
-    settings = Settings(base_dir=tmp_path)
-    settings.ensure_directories()
-
-    interim = Path(settings.interim_dir)
-    _write_csv(
-        interim / "abs_sa2_attributes.csv",
-        ["sa2_code", "sa2_name"],
-        [
-            {"sa2_code": "101021001", "sa2_name": "Sydney Inner"},
-            {"sa2_code": "101021002", "sa2_name": "Sydney Outer"},
-        ],
-    )
-    _write_csv(
-        interim / "abs_sa2_geometries.csv",
-        ["sa2_code", "geometry_wkt"],
-        [
-            {
-                "sa2_code": "101021001",
-                "geometry_wkt": "POLYGON ((0 0, 1 0, 1 1, 0 1, 0 0))",
-            },
-            {
-                "sa2_code": "101021002",
-                "geometry_wkt": "POLYGON ((1 1, 2 1, 2 2, 1 2, 1 1))",
-            },
-        ],
-    )
-    _write_csv(
-        interim / "commute_clean.csv",
-        ["date", "sa2_code", "observed_delay_min", "mood"],
-        [
-            {"date": "2025-01-01", "sa2_code": "101021001", "observed_delay_min": 5, "mood": 4},
-            {"date": "2025-01-01", "sa2_code": "101021001", "observed_delay_min": 7, "mood": 5},
-            {"date": "2025-01-01", "sa2_code": "101021002", "observed_delay_min": 12, "mood": 3},
-            {"date": "2025-01-01", "sa2_code": "101021002", "observed_delay_min": 15, "mood": 2},
-        ],
-    )
-    _write_csv(
-        interim / "weather_clean.csv",
-        ["date", "sa2_code", "rainfall_mm", "temp_max_c", "temp_min_c"],
-        [
-            {"date": "2025-01-01", "sa2_code": "101021001", "rainfall_mm": 0.0, "temp_max_c": 28, "temp_min_c": 20},
-            {"date": "2025-01-01", "sa2_code": "101021001", "rainfall_mm": 0.5, "temp_max_c": 27, "temp_min_c": 19},
-            {"date": "2025-01-01", "sa2_code": "101021002", "rainfall_mm": 5.0, "temp_max_c": 30, "temp_min_c": 25},
-            {"date": "2025-01-01", "sa2_code": "101021002", "rainfall_mm": 6.0, "temp_max_c": 31, "temp_min_c": 24},
-        ],
-    )
-
+@pytest.fixture
+def seeded_settings(tmp_path: Path):
+    settings = create_settings(tmp_path)
+    seed_abs_tables(settings)
+    seed_commute_data(settings)
+    seed_weather_data(settings)
     build_geometries(settings)
     build_commute_features(settings)
     build_weather_features(settings)
@@ -90,43 +49,56 @@ def test_min_max_scale_handles_constant_series() -> None:
     assert scaled == [0.0, 0.0, 0.0]
 
 
-def test_composite_index_monotonic_with_delays(tmp_path: Path) -> None:
-    settings = _settings_with_data(tmp_path)
-    results = build_composite_index(settings)
+def test_settings_normalizes_schi_weights(tmp_path: Path) -> None:
+    raw_weights = {"reliability": 2, "mood": 2, "rain_comfort": 1, "temperature": 1}
+    settings = create_settings(tmp_path, schi_weights=raw_weights)
 
-    geometry_wkt_values = [row.get("geometry_wkt") for row in results]
-    assert all(value for value in geometry_wkt_values)
+    total = sum(settings.SCHI_WEIGHTS.values())
+    assert pytest.approx(total, rel=1e-6) == 1.0
+    assert settings.SCHI_WEIGHTS["reliability"] == pytest.approx(1 / 3)
+    assert settings.SCHI_WEIGHTS["temperature"] == pytest.approx(1 / 6)
 
-    schi_values = [row["schi"] for row in results]
-    assert all(0.0 <= value <= 1.0 for value in schi_values)
 
-    # Two SA2 codes appear once each due to identical dates.
-    lookup = {row["sa2_code"]: row for row in results}
-    assert lookup["101021001"]["schi"] > lookup["101021002"]["schi"]
+def test_composite_index_joins_geometries(seeded_settings) -> None:
+    results = build_composite_index(seeded_settings)
 
-    # Increase delays for the low delay suburb and ensure the score drops.
-    interim = Path(settings.interim_dir)
-    with (interim / "commute_clean.csv").open("r", newline="") as handle:
-        reader = list(csv.DictReader(handle))
+    assert all(row["geometry_wkt"] for row in results)
+    assert all(0.0 <= row["schi"] <= 1.0 for row in results)
 
-    for row in reader:
-        if row["sa2_code"] == "101021001":
-            row["observed_delay_min"] = str(float(row["observed_delay_min"]) + 20)
+    processed_path = Path(seeded_settings.processed_dir) / "schi.csv"
+    with processed_path.open("r", newline="") as handle:
+        reader = csv.DictReader(handle)
+        assert set(reader.fieldnames or []) >= {"schi", "geometry_wkt"}
 
-    _write_csv(
-        interim / "commute_clean.csv",
-        ["date", "sa2_code", "observed_delay_min", "mood"],
-        reader,
+
+def test_composite_index_score_decreases_with_higher_delays(seeded_settings) -> None:
+    baseline = build_composite_index(seeded_settings)
+    lookup = {row["sa2_code"]: row for row in baseline}
+
+    worse_commute_rows = []
+    for row in DEFAULT_COMMUTE_ROWS:
+        if row["sa2_code"] == "101021001" and row["date"] == "2025-01-03":
+            updated = {**row, "observed_delay_min": row["observed_delay_min"] + 30}
+            worse_commute_rows.append(updated)
+        else:
+            worse_commute_rows.append(dict(row))
+
+    seed_commute_data(seeded_settings, rows=worse_commute_rows)
+    build_commute_features(seeded_settings)
+
+    downgraded = build_composite_index(seeded_settings)
+    new_lookup = {row["sa2_code"]: row for row in downgraded}
+
+    assert new_lookup["101021001"]["schi"] < lookup["101021001"]["schi"]
+    assert new_lookup["101021002"]["schi"] == pytest.approx(
+        lookup["101021002"]["schi"], rel=1e-6
     )
 
-    build_commute_features(settings)
-    downgraded = build_composite_index(settings)
 
-    new_lookup = {row["sa2_code"]: row for row in downgraded}
-    assert new_lookup["101021001"]["schi"] + 1e-6 < lookup["101021001"]["schi"]
-"""Placeholder tests for SCHI index calculations."""
-
-
-def test_placeholder_index() -> None:
-    """Placeholder test to be replaced with real index tests."""
-    assert True
+__all__ = [
+    "test_min_max_scale_bounds",
+    "test_min_max_scale_handles_constant_series",
+    "test_settings_normalizes_schi_weights",
+    "test_composite_index_joins_geometries",
+    "test_composite_index_score_decreases_with_higher_delays",
+]

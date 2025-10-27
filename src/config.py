@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import os
 from dataclasses import dataclass
+from importlib import import_module
 from pathlib import Path
 from typing import Dict, Mapping, Optional
 
@@ -12,12 +13,7 @@ from dotenv import load_dotenv
 
 @dataclass
 class Settings:
-    """Project configuration container.
-
-    Parameters are intentionally lightweight so that unit tests can instantiate
-    the settings object with a temporary base directory. All paths are resolved
-    relative to :attr:`base_dir` unless explicitly provided.
-    """
+    """Project configuration container used throughout feature engineering."""
 
     base_dir: Path = Path(".")
     data_dir: Path | None = None
