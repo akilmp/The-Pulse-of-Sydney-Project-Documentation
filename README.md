@@ -256,7 +256,7 @@ SCHI = 0.35*RS + 0.25*AS + 0.20*WC + 0.20*CX
 ### 8.1 Environment & Setup
 
 * Python 3.11+
-* Key libs: `pandas`, `numpy`, `pyyaml`, `geopandas`, `shapely`, `pyproj`, `matplotlib`, `plotly`, `streamlit`, `pytest`, `python-dotenv`.
+* Key libs: `pandas`, `numpy`, `pyyaml`, `geopandas`, `shapely`, `pyproj`, `matplotlib`, `plotly`, `streamlit`, `nbconvert`, `pytest`, `python-dotenv`.
 
 **Install:**
 
