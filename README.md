@@ -45,6 +45,52 @@ Sydney residents often make trade‑offs between where they live, how they commu
 
 ---
 
+## 3.1) Running the Streamlit Dashboard
+
+### Data prerequisites
+
+The dashboard expects the feature engineering pipeline to populate the processed cache:
+
+* `data/processed/commute_features.csv`
+* `data/processed/weather_features.csv`
+* `data/processed/sa2_geometries.csv`
+* `data/processed/schi.csv`
+
+Generate them with the provided make targets (or run the underlying modules directly):
+
+```bash
+pip install -e .
+make features        # runs cleaning + feature builders and writes to data/processed/
+```
+
+### Launching Streamlit
+
+```bash
+pip install -r requirements.txt  # or `pip install -e .[dev]`
+streamlit run app/streamlit_app.py
+```
+
+By default Streamlit opens a browser tab. In remote/headless environments you can keep the
+server running and forward the port:
+
+```bash
+streamlit run app/streamlit_app.py --server.address 0.0.0.0 --server.port 8501
+```
+
+### Smoke test command
+
+CI or local smoke tests can verify that the app loads without needing a browser by using the
+headless Streamlit runner:
+
+```bash
+python -m streamlit.web.cli run app/streamlit_app.py --headless --server.port 8765 --server.address 127.0.0.1
+```
+
+The command exits once the script initialises, which is sufficient to detect missing data files
+or syntax errors in the layout code.
+
+---
+
 ## 4) Repository Structure
 
 ```
