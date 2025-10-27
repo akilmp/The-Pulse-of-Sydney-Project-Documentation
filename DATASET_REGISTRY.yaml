@@ -7,8 +7,8 @@ abs:
   - median_age
   - seifa_score
   dataset: abs
-  description: Australian Bureau of Statistics style demographic sample.
-  fetched_at: '2025-10-27T04:09:29.291072+00:00'
+  description: Australian Bureau of Statistics releases relevant to the project.
+  fetched_at: '2025-10-27T19:41:17.424112+11:00'
   path: /workspace/The-Pulse-of-Sydney-Project-Documentation/data/raw/abs.csv
   rows: 3
   source_url: https://raw.githubusercontent.com/justmarkham/pandas-videos/master/data/u.s._counties_2010.csv
@@ -21,8 +21,8 @@ housing:
   - median_rent
   - observation_month
   dataset: housing
-  description: Median housing indicators for Sydney suburbs (sampled).
-  fetched_at: '2025-10-27T04:09:26.962131+00:00'
+  description: Housing affordability and rental market indicators.
+  fetched_at: '2025-10-27T19:40:52.133159+11:00'
   path: /workspace/The-Pulse-of-Sydney-Project-Documentation/data/raw/housing.csv
   rows: 200
   source_url: https://raw.githubusercontent.com/plotly/datasets/master/minoritymajority.csv
@@ -39,8 +39,8 @@ transport:
   - mode
   - record_id
   dataset: transport
-  description: Sample commute reliability metrics for Sydney services.
-  fetched_at: '2025-10-27T04:09:21.764576+00:00'
+  description: Sydney public transport data used for commute analysis.
+  fetched_at: '2025-10-27T19:40:51.502769+11:00'
   path: /workspace/The-Pulse-of-Sydney-Project-Documentation/data/raw/transport.csv
   rows: 1000
   source_url: https://raw.githubusercontent.com/mwaskom/seaborn-data/master/taxis.csv
@@ -55,8 +55,8 @@ weather:
   - station_name
   - suburb
   dataset: weather
-  description: Daily weather observations used as proxy for Sydney climate.
-  fetched_at: '2025-10-27T04:09:24.391258+00:00'
+  description: Weather observations for Sydney used in feature engineering.
+  fetched_at: '2025-10-27T19:40:51.741218+11:00'
   path: /workspace/The-Pulse-of-Sydney-Project-Documentation/data/raw/weather.csv
   rows: 1000
   source_url: https://raw.githubusercontent.com/vega/vega-datasets/master/data/seattle-weather.csv
