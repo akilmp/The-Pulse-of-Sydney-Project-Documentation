@@ -1,0 +1,13 @@
+__pycache__/
+*.py[cod]
+*.log
+
+# Data artifacts
+/data/raw/*
+/data/interim/*
+!data/raw/.gitkeep
+!data/interim/.gitkeep
+
+# Virtual environments
+.venv/
+
