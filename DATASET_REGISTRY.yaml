@@ -8,8 +8,8 @@ abs:
   - seifa_score
   dataset: abs
   description: Australian Bureau of Statistics releases relevant to the project.
-  fetched_at: '2025-10-27T19:41:15.660341+11:00'
-  path: data/raw/abs
+  fetched_at: '2025-10-27T19:41:17.424112+11:00'
+  path: /workspace/The-Pulse-of-Sydney-Project-Documentation/data/raw/abs.csv
   rows: 3
   source_url: https://www.abs.gov.au/
 housing:
@@ -22,10 +22,10 @@ housing:
   - observation_month
   dataset: housing
   description: Housing affordability and rental market indicators.
-  fetched_at: '2025-10-27T19:41:12.789169+11:00'
-  path: data/raw/housing
-  rows: 3
-  source_url: https://www.domain.com.au/research/
+  fetched_at: '2025-10-27T19:40:52.133159+11:00'
+  path: /workspace/The-Pulse-of-Sydney-Project-Documentation/data/raw/housing.csv
+  rows: 200
+  source_url: https://raw.githubusercontent.com/plotly/datasets/master/minoritymajority.csv
 transport:
   checksum: d01e2435a737fed3370278f7f577fca9f9a8a0b5acd3bf1c17c0a3d89960a08e
   columns:
@@ -40,10 +40,10 @@ transport:
   - total_fare
   dataset: transport
   description: Sydney public transport data used for commute analysis.
-  fetched_at: '2025-10-27T19:41:08.975172+11:00'
-  path: data/raw/transport
-  rows: 3
-  source_url: https://opendata.transport.nsw.gov.au/
+  fetched_at: '2025-10-27T19:40:51.502769+11:00'
+  path: /workspace/The-Pulse-of-Sydney-Project-Documentation/data/raw/transport.csv
+  rows: 1000
+  source_url: https://raw.githubusercontent.com/mwaskom/seaborn-data/master/taxis.csv
 weather:
   checksum: 5198ff464649de970d21201f5e757150765b9838058fcbbed0f6bec5bed61621
   columns:
@@ -56,7 +56,7 @@ weather:
   - suburb
   dataset: weather
   description: Weather observations for Sydney used in feature engineering.
-  fetched_at: '2025-10-27T19:41:10.887291+11:00'
-  path: data/raw/weather
-  rows: 3
-  source_url: http://www.bom.gov.au/climate/data/
+  fetched_at: '2025-10-27T19:40:51.741218+11:00'
+  path: /workspace/The-Pulse-of-Sydney-Project-Documentation/data/raw/weather.csv
+  rows: 1000
+  source_url: https://raw.githubusercontent.com/vega/vega-datasets/master/data/seattle-weather.csv
