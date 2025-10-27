@@ -1,72 +1,14 @@
 """Configuration helpers for the Sydney Pulse project."""
+
 from __future__ import annotations
 
-import importlib.util
 import os
 from dataclasses import dataclass
 from importlib import import_module
 from pathlib import Path
 from typing import Dict, Mapping, Optional
 
-if importlib.util.find_spec("dotenv") is not None:  # pragma: no cover - optional
-    load_dotenv = import_module("dotenv").load_dotenv
-else:  # pragma: no cover - optional dependency missing
-    def load_dotenv(*args: object, **kwargs: object) -> bool:
-        return False
-
-
-@dataclass(frozen=True)
-class DatasetConfig:
-    """Configuration describing storage locations and metadata for a dataset."""
-
-    name: str
-    description: str
-    source_url: str
-    raw_path: Path
-    interim_path: Path
-    processed_path: Path
-
-
-def _dataset_paths(base_dir: Path, name: str) -> tuple[Path, Path, Path]:
-    data_dir = base_dir / "data"
-    raw = data_dir / "raw" / f"{name}.csv"
-    interim = data_dir / "interim" / f"{name}_clean.csv"
-    processed = data_dir / "processed" / f"{name}.csv"
-    return raw, interim, processed
-
-
-def _build_dataset_configs(base_dir: Path) -> Mapping[str, DatasetConfig]:
-    descriptions = {
-        "abs": (
-            "Australian Bureau of Statistics style demographic sample.",
-            "https://raw.githubusercontent.com/justmarkham/pandas-videos/master/data/u.s._counties_2010.csv",
-        ),
-        "housing": (
-            "Median housing indicators for Sydney suburbs (sampled).",
-            "https://raw.githubusercontent.com/plotly/datasets/master/minoritymajority.csv",
-        ),
-        "transport": (
-            "Sample commute reliability metrics for Sydney services.",
-            "https://raw.githubusercontent.com/mwaskom/seaborn-data/master/taxis.csv",
-        ),
-        "weather": (
-            "Daily weather observations used as proxy for Sydney climate.",
-            "https://raw.githubusercontent.com/vega/vega-datasets/master/data/seattle-weather.csv",
-        ),
-    }
-
-    configs: Dict[str, DatasetConfig] = {}
-    for dataset, (description, source) in descriptions.items():
-        raw_path, interim_path, processed_path = _dataset_paths(base_dir, dataset)
-        configs[dataset] = DatasetConfig(
-            name=dataset,
-            description=description,
-            source_url=source,
-            raw_path=raw_path,
-            interim_path=interim_path,
-            processed_path=processed_path,
-        )
-    return configs
+from dotenv import load_dotenv
 
 
 @dataclass
@@ -82,25 +24,10 @@ class Settings:
 
     def __post_init__(self) -> None:
         self.base_dir = Path(self.base_dir)
-        if self.data_dir is None:
-            self.data_dir = self.base_dir / "data"
-        else:
-            self.data_dir = self._resolve(self.data_dir)
-
-        if self.raw_dir is None:
-            self.raw_dir = self.data_dir / "raw"
-        else:
-            self.raw_dir = self._resolve(self.raw_dir)
-
-        if self.interim_dir is None:
-            self.interim_dir = self.data_dir / "interim"
-        else:
-            self.interim_dir = self._resolve(self.interim_dir)
-
-        if self.processed_dir is None:
-            self.processed_dir = self.data_dir / "processed"
-        else:
-            self.processed_dir = self._resolve(self.processed_dir)
+        self.data_dir = self._resolve_or_default(self.data_dir, self.base_dir / "data")
+        self.raw_dir = self._resolve_or_default(self.raw_dir, self.data_dir / "raw")
+        self.interim_dir = self._resolve_or_default(self.interim_dir, self.data_dir / "interim")
+        self.processed_dir = self._resolve_or_default(self.processed_dir, self.data_dir / "processed")
 
         if self.schi_weights is None:
             self.schi_weights = self._default_weights()
@@ -111,11 +38,16 @@ class Settings:
     def SCHI_WEIGHTS(self) -> Mapping[str, float]:
         return self.schi_weights
 
+    def _resolve_or_default(self, value: Path | str | None, default: Path) -> Path:
+        if value is None:
+            return Path(default)
+        return self._resolve(value)
+
     def _resolve(self, path: Path | str) -> Path:
-        path = Path(path)
-        if path.is_absolute():
-            return path
-        return self.base_dir / path
+        candidate = Path(path)
+        if candidate.is_absolute():
+            return candidate
+        return self.base_dir / candidate
 
     def _default_weights(self) -> Mapping[str, float]:
         weights: Dict[str, float] = {
@@ -141,68 +73,51 @@ class Settings:
 
 
 @dataclass(frozen=True)
-class ProjectConfig:
-    """Base configuration values loaded from environment variables."""
+class DatasetConfig:
+    """Metadata describing a dataset managed by the project."""
 
-    project_root: Path
-    data_dir: Path
-    raw_data_dir: Path
-    interim_data_dir: Path
-    processed_data_dir: Path
-    timezone: str
-    personal_log: Path
-    default_cache_dir: Path
-    env: str
+    name: str
+    description: str
+    source_url: str
+    raw_path: Path
+    interim_path: Path
 
 
-def _load_env_file(dotenv_path: Optional[Path] = None) -> None:
-    """Load environment variables from a .env file if it exists."""
-
-    if dotenv_path is None:
-        dotenv_path = Path.cwd() / ".env"
-    if dotenv_path.exists():
-        load_dotenv(dotenv_path=dotenv_path, override=False)
+def _data_subdir(*parts: str) -> Path:
+    return Path("data").joinpath(*parts)
 
 
-def get_project_root() -> Path:
-    """Return the absolute path to the repository root."""
-
-    return Path(__file__).resolve().parents[1]
-
-
-def load_config(env_file: Optional[Path] = None) -> ProjectConfig:
-    """Create a :class:`ProjectConfig` from environment variables."""
-
-    _load_env_file(env_file)
-
-    project_root = get_project_root()
-    data_dir = project_root / "data"
-
-    timezone = os.getenv("SYDNEY_PULSE_TIMEZONE", "Australia/Sydney")
-    env = os.getenv("SYDNEY_PULSE_ENV", "development")
-
-    return ProjectConfig(
-        project_root=project_root,
-        data_dir=data_dir,
-        raw_data_dir=data_dir / "raw",
-        interim_data_dir=data_dir / "interim",
-        processed_data_dir=data_dir / "processed",
-        timezone=timezone,
-        personal_log=data_dir / "raw" / "personal_commute_log.csv",
-        default_cache_dir=project_root / "data" / "cache",
-        env=env,
-    )
-
-
-PROJECT_ROOT = get_project_root()
-DATASET_CONFIGS: Mapping[str, DatasetConfig] = _build_dataset_configs(PROJECT_ROOT)
+DATASET_CONFIGS: dict[str, DatasetConfig] = {
+    "transport": DatasetConfig(
+        name="transport",
+        description="Sydney public transport data used for commute analysis.",
+        source_url="https://opendata.transport.nsw.gov.au/",
+        raw_path=_data_subdir("raw", "transport"),
+        interim_path=_data_subdir("interim", "transport"),
+    ),
+    "weather": DatasetConfig(
+        name="weather",
+        description="Weather observations for Sydney used in feature engineering.",
+        source_url="http://www.bom.gov.au/climate/data/",
+        raw_path=_data_subdir("raw", "weather"),
+        interim_path=_data_subdir("interim", "weather"),
+    ),
+    "housing": DatasetConfig(
+        name="housing",
+        description="Housing affordability and rental market indicators.",
+        source_url="https://www.domain.com.au/research/",
+        raw_path=_data_subdir("raw", "housing"),
+        interim_path=_data_subdir("interim", "housing"),
+    ),
+    "abs": DatasetConfig(
+        name="abs",
+        description="Australian Bureau of Statistics releases relevant to the project.",
+        source_url="https://www.abs.gov.au/",
+        raw_path=_data_subdir("raw", "abs"),
+        interim_path=_data_subdir("interim", "abs"),
+    ),
+}
 
 
-__all__ = [
-    "DatasetConfig",
-    "DATASET_CONFIGS",
-    "ProjectConfig",
-    "Settings",
-    "get_project_root",
-    "load_config",
-]
+__all__ = ["Settings", "DatasetConfig", "DATASET_CONFIGS"]
+
