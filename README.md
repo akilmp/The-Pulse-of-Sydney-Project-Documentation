@@ -26,7 +26,7 @@ Sydney residents often make trade‑offs between where they live, how they commu
 
 ## 2) Personal Angle (Why This Is Mine)
 
-* I commute from **[Your Suburb]** to **[Your Work/Education Area]** primarily by **[train/bus/ferry/car]**.
+* I commute from Olympic to Randwick primarily by Train/Bus.
 * For **30 days**, I self‑logged **departure time, arrival time, connection count, perceived delay, and mood (1–5)**.
 * I include optional diary notes (e.g., trackwork, rain, crowding) to enrich qualitative context.
 
