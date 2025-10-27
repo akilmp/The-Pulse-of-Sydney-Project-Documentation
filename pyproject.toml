@@ -1,17 +1,33 @@
+[project]
+name = "sydney-pulse"
+version = "0.1.0"
+description = "Project scaffolding for The Pulse of Sydney data pipeline"
+readme = "README.md"
+authors = [{ name = "Your Name", email = "you@example.com" }]
+requires-python = ">=3.11"
+dependencies = [
+    "python-dotenv>=1.0",
+    "pandas>=2.2",
+    "requests>=2.31",
+    "streamlit>=1.32",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0",
+    "black>=24.0",
+    "ruff>=0.4",
+]
+
 [build-system]
-requires = ["setuptools", "wheel"]
+requires = ["setuptools>=64", "wheel"]
 build-backend = "setuptools.build_meta"
 
+[tool.black]
+line-length = 88
+target-version = ["py311"]
+
 [tool.ruff]
-line-length = 100
-src = ["src", "tests"]
-exclude = ["data", "notebooks", "report"]
-
-[tool.ruff.lint]
-select = ["E", "F", "I"]
-ignore = ["E203"]
-
-[tool.pytest.ini_options]
-testpaths = ["tests"]
-addopts = "-ra"
-pythonpath = ["src"]
+line-length = 88
+select = ["E", "F", "B", "I"]
+ignore = ["E501"]

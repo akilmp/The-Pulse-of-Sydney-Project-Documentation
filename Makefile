@@ -1,32 +1,36 @@
-.PHONY: data clean features test lint
+.PHONY: help data clean features app test report
 
-DATA_FIXTURE=data/fixtures/transport_sample.csv
-RAW_COPY=data/raw/transport_sample.csv
-PROCESSED_MANIFEST=data/processed/features_manifest.json
+PYTHON ?= python
 
-## make data: populate cached raw data from fixtures
+help:
+@echo "Available targets:"
+@echo "  make data     # Fetch raw datasets"
+@echo "  make clean    # Run data cleaning tasks"
+@echo "  make features # Build feature datasets"
+@echo "  make app      # Start the Streamlit dashboard"
+@echo "  make test     # Execute automated tests"
+@echo "  make report   # Generate project report"
+
+DATA_SCRIPT ?= src/etl
+CLEANING_SCRIPT ?= src/cleaning
+FEATURE_SCRIPT ?= src/features
+APP_SCRIPT ?= app/streamlit_app.py
+
+
 data:
-	@echo "Copying cached fixtures into data/raw"
-	@mkdir -p data/raw
-	@cp $(DATA_FIXTURE) $(RAW_COPY)
+@echo "TODO: Implement data fetching pipelines in $${DATA_SCRIPT}"
 
-## make clean: remove processed artefacts but keep fixtures
 clean:
-	@echo "Cleaning processed artefacts"
-	@rm -f data/raw/transport_sample.csv
-	@find data/interim -type f ! -name '.gitkeep' -delete
-	@find data/processed -type f ! -name '.gitkeep' -delete
+@echo "TODO: Implement cleaning steps in $${CLEANING_SCRIPT}"
 
-## make features: derive processed artefacts using cached raw data
-features: data
-	@echo "Generating processed features manifest"
-	@mkdir -p data/processed
-	@printf '{\n  "source": "data/raw/transport_sample.csv",\n  "records": 3,\n  "description": "Synthetic features for CI"\n}\n' > $(PROCESSED_MANIFEST)
+features:
+@echo "TODO: Implement feature engineering in $${FEATURE_SCRIPT}"
 
-## make test: run pytest suite
+app:
+$(PYTHON) -m streamlit run $(APP_SCRIPT)
+
 test:
-	pytest
+$(PYTHON) -m pytest
 
-## make lint: run optional Ruff checks
-lint:
-	ruff check src tests
+report:
+@echo "TODO: Generate analytical report"
