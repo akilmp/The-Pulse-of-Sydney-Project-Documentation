@@ -5,9 +5,13 @@ from __future__ import annotations
 import csv
 from datetime import datetime, time
 from pathlib import Path
-from typing import Iterable, Mapping, MutableMapping, Sequence
+from typing import Iterable, Mapping, MutableMapping, Sequence, TYPE_CHECKING
 
 from zoneinfo import ZoneInfo
+
+
+if TYPE_CHECKING:  # pragma: no cover - type checking only
+    import pandas as pd
 
 
 def ensure_directory(path: Path) -> Path:
@@ -53,6 +57,14 @@ def read_csv(path: Path) -> list[dict[str, str]]:
         return [dict(row) for row in reader]
 
 
+def write_dataframe(df: "pd.DataFrame", path: Path, *, index: bool = False, **kwargs: object) -> Path:
+    """Persist a pandas :class:`DataFrame` to ``path`` as CSV."""
+
+    ensure_directory(path)
+    df.to_csv(path, index=index, **kwargs)
+    return path
+
+
 def local_now(tz: str) -> datetime:
     """Return the current time in the specified timezone."""
 
@@ -71,6 +83,7 @@ __all__ = [
     "ensure_directory",
     "write_csv",
     "read_csv",
+    "write_dataframe",
     "local_now",
     "combine_date_time",
 ]

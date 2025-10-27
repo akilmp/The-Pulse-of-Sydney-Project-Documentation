@@ -1,18 +1,77 @@
+"""Configuration helpers for the Sydney Pulse project."""
 from __future__ import annotations
 
+import importlib.util
+import os
 from dataclasses import dataclass
+from importlib import import_module
 from pathlib import Path
-from typing import Dict, Mapping
+from typing import Dict, Mapping, Optional
+
+if importlib.util.find_spec("dotenv") is not None:  # pragma: no cover - optional
+    load_dotenv = import_module("dotenv").load_dotenv
+else:  # pragma: no cover - optional dependency missing
+    def load_dotenv(*args: object, **kwargs: object) -> bool:
+        return False
+
+
+@dataclass(frozen=True)
+class DatasetConfig:
+    """Configuration describing storage locations and metadata for a dataset."""
+
+    name: str
+    description: str
+    source_url: str
+    raw_path: Path
+    interim_path: Path
+    processed_path: Path
+
+
+def _dataset_paths(base_dir: Path, name: str) -> tuple[Path, Path, Path]:
+    data_dir = base_dir / "data"
+    raw = data_dir / "raw" / f"{name}.csv"
+    interim = data_dir / "interim" / f"{name}_clean.csv"
+    processed = data_dir / "processed" / f"{name}.csv"
+    return raw, interim, processed
+
+
+def _build_dataset_configs(base_dir: Path) -> Mapping[str, DatasetConfig]:
+    descriptions = {
+        "abs": (
+            "Australian Bureau of Statistics style demographic sample.",
+            "https://raw.githubusercontent.com/justmarkham/pandas-videos/master/data/u.s._counties_2010.csv",
+        ),
+        "housing": (
+            "Median housing indicators for Sydney suburbs (sampled).",
+            "https://raw.githubusercontent.com/plotly/datasets/master/minoritymajority.csv",
+        ),
+        "transport": (
+            "Sample commute reliability metrics for Sydney services.",
+            "https://raw.githubusercontent.com/mwaskom/seaborn-data/master/taxis.csv",
+        ),
+        "weather": (
+            "Daily weather observations used as proxy for Sydney climate.",
+            "https://raw.githubusercontent.com/vega/vega-datasets/master/data/seattle-weather.csv",
+        ),
+    }
+
+    configs: Dict[str, DatasetConfig] = {}
+    for dataset, (description, source) in descriptions.items():
+        raw_path, interim_path, processed_path = _dataset_paths(base_dir, dataset)
+        configs[dataset] = DatasetConfig(
+            name=dataset,
+            description=description,
+            source_url=source,
+            raw_path=raw_path,
+            interim_path=interim_path,
+            processed_path=processed_path,
+        )
+    return configs
 
 
 @dataclass
 class Settings:
-    """Project configuration container.
-
-    Parameters are intentionally lightweight so that unit tests can instantiate
-    the settings object with a temporary base directory. All paths are resolved
-    relative to :attr:`base_dir` unless explicitly provided.
-    """
+    """Project configuration container used throughout feature engineering."""
 
     base_dir: Path = Path(".")
     data_dir: Path | None = None
@@ -79,16 +138,6 @@ class Settings:
 
         for path in (self.raw_dir, self.interim_dir, self.processed_dir):
             Path(path).mkdir(parents=True, exist_ok=True)
-"""Configuration helpers for the Sydney Pulse project."""
-
-from __future__ import annotations
-
-import os
-from dataclasses import dataclass
-from pathlib import Path
-from typing import Optional
-
-from dotenv import load_dotenv
 
 
 @dataclass(frozen=True)
@@ -145,4 +194,15 @@ def load_config(env_file: Optional[Path] = None) -> ProjectConfig:
     )
 
 
-__all__ = ["ProjectConfig", "get_project_root", "load_config"]
+PROJECT_ROOT = get_project_root()
+DATASET_CONFIGS: Mapping[str, DatasetConfig] = _build_dataset_configs(PROJECT_ROOT)
+
+
+__all__ = [
+    "DatasetConfig",
+    "DATASET_CONFIGS",
+    "ProjectConfig",
+    "Settings",
+    "get_project_root",
+    "load_config",
+]
