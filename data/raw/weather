@@ -1,0 +1,4 @@
+observation_time,rain_mm,temp_max_c,temp_min_c,observation_type,station_name,suburb
+2023-05-01T12:00:00Z,2.0,22.5,14.2,rain,Sydney Observatory Hill,Sydney CBD
+2023-05-02T12:00:00Z,0.0,24.0,13.9,sun,Sydney Observatory Hill,Sydney CBD
+2023-05-03T12:00:00Z,5.2,19.0,11.0,rain,Sydney Observatory Hill,Sydney CBD

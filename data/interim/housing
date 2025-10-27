@@ -1,0 +1,4 @@
+sa2_name,sa2_canonical,suburb,suburb_canonical,observation_month,median_sale_price,median_rent,price_to_rent_ratio
+Parramatta - Rosehill,Parramatta - Rosehill,Parramatta,Parramatta,2023-05-01,980000,520,36.24
+Sydney - Haymarket - The Rocks,Sydney - Haymarket - The Rocks,Sydney CBD,Sydney CBD,2023-05-01,1250000,750,32.05
+Randwick,Randwick,Randwick,Randwick,2023-05-01,1800000,820,42.21

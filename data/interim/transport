@@ -1,0 +1,4 @@
+service_id,service_timestamp,origin_suburb,origin_sa2,destination_suburb,destination_sa2,mode,duration_minutes,delay_minutes,load_factor,fare_total,status
+1,2023-05-01 17:30:00+10:00,Parramatta,125021656,Sydney CBD,117011321,Train,35.0,0.0,0.267,5.6,ontime
+2,2023-05-01 18:10:00+10:00,Chatswood,121041392,Sydney CBD,117011321,Train,32.0,0.0,0.175,4.1,ontime
+3,2023-05-01 19:05:00+10:00,Surry Hills,117011322,Randwick,118011342,Bus,30.0,8.11,0.688,3.2,delayed

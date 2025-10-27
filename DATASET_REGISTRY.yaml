@@ -11,9 +11,9 @@ abs:
   fetched_at: '2025-10-27T19:41:17.424112+11:00'
   path: /workspace/The-Pulse-of-Sydney-Project-Documentation/data/raw/abs.csv
   rows: 3
-  source_url: https://raw.githubusercontent.com/justmarkham/pandas-videos/master/data/u.s._counties_2010.csv
+  source_url: https://www.abs.gov.au/
 housing:
-  checksum: 6424f3be2542e98ef416a4ed9c3a3918129119e0e8ce4ef134a4ec4c5d270bff
+  checksum: 708734dfe151b61808ce3572ffaab385719c422b4243a1e241f8ab68d615f736
   columns:
   - sa2_name
   - suburb
@@ -27,17 +27,17 @@ housing:
   rows: 200
   source_url: https://raw.githubusercontent.com/plotly/datasets/master/minoritymajority.csv
 transport:
-  checksum: d37be18b370e1cea73668e2062f0471157eb60d4c8867fdac384954cf7148704
+  checksum: d01e2435a737fed3370278f7f577fca9f9a8a0b5acd3bf1c17c0a3d89960a08e
   columns:
+  - record_id
   - service_start
   - service_end
   - origin
   - destination
-  - distance
-  - total_fare
-  - passengers
   - mode
-  - record_id
+  - distance
+  - passengers
+  - total_fare
   dataset: transport
   description: Sydney public transport data used for commute analysis.
   fetched_at: '2025-10-27T19:40:51.502769+11:00'
@@ -45,13 +45,13 @@ transport:
   rows: 1000
   source_url: https://raw.githubusercontent.com/mwaskom/seaborn-data/master/taxis.csv
 weather:
-  checksum: 35447fb1ecc0fedfe7c93f061b07cc4224829107f008e00f656b19640cdd8e4e
+  checksum: 5198ff464649de970d21201f5e757150765b9838058fcbbed0f6bec5bed61621
   columns:
+  - observation_time
   - rain_mm
   - temp_max_c
   - temp_min_c
   - observation_type
-  - observation_time
   - station_name
   - suburb
   dataset: weather
