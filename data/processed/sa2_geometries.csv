@@ -1,0 +1,3 @@
+sa2_code,sa2_name,geometry_wkt
+101021001,Sydney Inner,"POLYGON ((0 0, 1 0, 1 1, 0 1, 0 0))"
+101021002,Sydney Outer,"POLYGON ((1 1, 2 1, 2 2, 1 2, 1 1))"

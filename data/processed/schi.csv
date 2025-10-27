@@ -1,0 +1,4 @@
+sa2_code,date,avg_delay_min,severe_delay_share,trip_count,avg_mood,rainfall_total_mm,temp_mean_c,temp_range_c,reliability_score,mood_score,rain_comfort_score,temperature_score,schi,geometry_wkt
+101021001,2025-01-01,8.500,0.500,2,3.500,2.000,24.750,10.500,0.000,0.000,0.000,0.000,0.0000,"POLYGON ((0 0, 1 0, 1 1, 0 1, 0 0))"
+101021001,2025-01-03,6.500,0.000,2,3.500,1.000,24.000,9.000,0.500,0.000,1.000,0.429,0.4429,"POLYGON ((0 0, 1 0, 1 1, 0 1, 0 0))"
+101021002,2025-01-02,4.500,0.000,2,4.500,1.500,21.000,7.000,1.000,1.000,0.500,1.000,0.9000,"POLYGON ((1 1, 2 1, 2 2, 1 2, 1 1))"
