@@ -2,9 +2,12 @@
 
 from __future__ import annotations
 
+import os
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Dict, Mapping
+from typing import Dict, Mapping, Optional
+
+from dotenv import load_dotenv
 
 
 @dataclass
@@ -25,25 +28,10 @@ class Settings:
 
     def __post_init__(self) -> None:
         self.base_dir = Path(self.base_dir)
-        if self.data_dir is None:
-            self.data_dir = self.base_dir / "data"
-        else:
-            self.data_dir = self._resolve(self.data_dir)
-
-        if self.raw_dir is None:
-            self.raw_dir = self.data_dir / "raw"
-        else:
-            self.raw_dir = self._resolve(self.raw_dir)
-
-        if self.interim_dir is None:
-            self.interim_dir = self.data_dir / "interim"
-        else:
-            self.interim_dir = self._resolve(self.interim_dir)
-
-        if self.processed_dir is None:
-            self.processed_dir = self.data_dir / "processed"
-        else:
-            self.processed_dir = self._resolve(self.processed_dir)
+        self.data_dir = self._resolve_or_default(self.data_dir, self.base_dir / "data")
+        self.raw_dir = self._resolve_or_default(self.raw_dir, self.data_dir / "raw")
+        self.interim_dir = self._resolve_or_default(self.interim_dir, self.data_dir / "interim")
+        self.processed_dir = self._resolve_or_default(self.processed_dir, self.data_dir / "processed")
 
         if self.schi_weights is None:
             self.schi_weights = self._default_weights()
@@ -54,11 +42,16 @@ class Settings:
     def SCHI_WEIGHTS(self) -> Mapping[str, float]:
         return self.schi_weights
 
+    def _resolve_or_default(self, value: Path | str | None, default: Path) -> Path:
+        if value is None:
+            return Path(default)
+        return self._resolve(value)
+
     def _resolve(self, path: Path | str) -> Path:
-        path = Path(path)
-        if path.is_absolute():
-            return path
-        return self.base_dir / path
+        candidate = Path(path)
+        if candidate.is_absolute():
+            return candidate
+        return self.base_dir / candidate
 
     def _default_weights(self) -> Mapping[str, float]:
         weights: Dict[str, float] = {
