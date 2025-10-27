@@ -548,4 +548,52 @@ GROUP BY sa2_code, date;
 
 ---
 
+## 22) Development Workflow & Quality Checks
+
+### 22.1 Pytest Layout
+
+All automated tests live under `tests/` and cover the end-to-end story with three layers:
+
+* **ETL fixtures** — `tests/test_etl.py` guards the cached CSV schema committed in `data/fixtures/`.
+* **Feature engineering** — `tests/test_features.py` validates aggregate calculations used downstream.
+* **SCHI computation** — `tests/test_schi.py` keeps the index formula bounded and delay-sensitive.
+
+The suite is configured via `pytest.ini`/`pyproject.toml` to automatically discover modules from `src/`.
+
+```bash
+# install tooling
+python -m venv .venv && source .venv/bin/activate
+pip install -r requirements-dev.txt
+
+# stage cached fixtures then run the suite
+make data
+pytest  # or: make test
+```
+
+### 22.2 Optional Static Analysis
+
+Ruff is configured in `pyproject.toml`. Run it locally with:
+
+```bash
+make lint
+```
+
+The CI workflow executes the same command with `continue-on-error: true` so style warnings do not block contributions.
+
+### 22.3 Reproducible Make Targets
+
+The automation workflow hinges on self-contained Make targets that avoid hitting live APIs:
+
+* `make data` — copies synthetic fixtures into `data/raw/`.
+* `make features` — produces a deterministic manifest under `data/processed/`.
+* `make clean` — removes generated artefacts while keeping versioned fixtures intact.
+
+These commands are exercised in GitHub Actions on every pull request alongside `pytest` to guarantee reproducibility without external services.
+
+### 22.4 Contribution Guidelines
+
+See `CONTRIBUTING.md` for a summary of style expectations, mandatory tests, and data privacy responsibilities before opening a pull request.
+
+---
+
 **End of Documentation**
