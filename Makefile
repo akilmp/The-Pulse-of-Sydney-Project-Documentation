@@ -3,13 +3,13 @@
 PYTHON ?= python
 
 help:
-@echo "Available targets:"
-@echo "  make data     # Fetch raw datasets"
-@echo "  make clean    # Run data cleaning tasks"
-@echo "  make features # Build feature datasets"
-@echo "  make app      # Start the Streamlit dashboard"
-@echo "  make test     # Execute automated tests"
-@echo "  make report   # Generate project report"
+	@echo "Available targets:"
+	@echo "  make data     # Fetch raw datasets"
+	@echo "  make clean    # Run data cleaning tasks"
+	@echo "  make features # Build feature datasets"
+	@echo "  make app      # Start the Streamlit dashboard"
+	@echo "  make test     # Execute automated tests"
+	@echo "  make report   # Generate project report"
 
 APP_SCRIPT ?= app/streamlit_app.py
 REPORT_NOTEBOOK ?= notebooks/05_visual_story.ipynb
@@ -53,10 +53,10 @@ features: ensure_data_dirs
 	done
 
 app:
-$(PYTHON) -m streamlit run $(APP_SCRIPT)
+	$(PYTHON) -m streamlit run $(APP_SCRIPT)
 
 test:
-$(PYTHON) -m pytest
+	$(PYTHON) -m pytest
 
 report:
 jupyter nbconvert --to pdf $(REPORT_NOTEBOOK) --output $(REPORT_OUTPUT)
