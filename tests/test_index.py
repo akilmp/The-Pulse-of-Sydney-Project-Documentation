@@ -124,3 +124,9 @@ def test_composite_index_monotonic_with_delays(tmp_path: Path) -> None:
 
     new_lookup = {row["sa2_code"]: row for row in downgraded}
     assert new_lookup["101021001"]["schi"] + 1e-6 < lookup["101021001"]["schi"]
+"""Placeholder tests for SCHI index calculations."""
+
+
+def test_placeholder_index() -> None:
+    """Placeholder test to be replaced with real index tests."""
+    assert True
